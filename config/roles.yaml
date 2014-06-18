@@ -3,4 +3,4 @@ roles:
   pe-puppet-agent:
     provisioners:
       - {type: hosts}
-      - {type: pe_bootstrap}
+      - {type: pe_bootstrap, answer_file: 'config/nomaster.txt'}
