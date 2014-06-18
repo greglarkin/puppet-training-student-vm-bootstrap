@@ -1,0 +1,6 @@
+---
+roles:
+  pe-puppet-agent:
+    provisioners:
+      - {type: hosts}
+      - {type: pe_bootstrap}
