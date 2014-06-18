@@ -14,3 +14,4 @@ q_puppetmaster_install=n
 q_vendor_packages_install=y
 q_continue_or_reenter_master_hostname=c
 q_verify_packages=y
+q_puppet_agent_first_run=n
