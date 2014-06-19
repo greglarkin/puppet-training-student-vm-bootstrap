@@ -5,7 +5,7 @@ task :default => 'deps'
 
 necessary_programs = %w(VirtualBox vagrant)
 necessary_plugins = %w(vagrant-auto_network vagrant-pe_build oscar)
-necessary_gems = %w(r10k)
+necessary_gems = %w(librarian-puppet)
 
 desc 'Check for the environment dependencies'
 task :deps do
@@ -62,11 +62,11 @@ task :setup do
 
 end
 
-desc 'Rebuild the Puppet Enterprise environments using the r10k control repo'
-task :r10k do
-  puts "Building out PE environments from the control repo..."
-  unless %x{r10k deploy -c puppet/r10k.yaml environment --puppetfile -p --verbose}
-    abort 'Failed to build out PE environments from the r10k control repo. Exiting...'
+desc 'Build out the modules directory for devtest'
+task :modules do
+  puts "Building out Puppet module directory..."
+  unless system('cd puppet && librarian-puppet install --verbose')
+    abort 'Failed to build out Puppet module directory. Exiting...'
   end
   puts "OK"
 end
