@@ -5,3 +5,4 @@ puppet/Puppetfile.lock
 puppet/.librarian
 puppet/modules
 puppet/.tmp
+Gemfile.lock
