@@ -1,11 +1,16 @@
-require 'os'
-require 'ptools'
+begin
+  require 'os'
+  require 'ptools'
+rescue LoadError => e
+  puts "Error during requires: \t#{e.message}"
+  abort "You may be able to fix this problem by running 'bundle'."
+end
 
 task :default => 'deps'
 
 necessary_programs = %w(VirtualBox vagrant)
-necessary_plugins = %w(vagrant-auto_network vagrant-pe_build oscar)
-necessary_gems = %w(librarian-puppet)
+necessary_plugins = %w(vagrant-auto_network vagrant-pe_build vagrant-vmware-fusion)
+necessary_gems = %w(bundle)
 
 desc 'Check for the environment dependencies'
 task :deps do
@@ -29,21 +34,31 @@ task :deps do
     printf "Checking for vagrant plugin %s...", plugin
     unless %x{vagrant plugin list}.include? plugin
       puts "\nSorry, I wasn't able to find the Vagrant plugin \'#{plugin}\' on your system."
-      abort "You may be able to fix this by running \'sudo rake setup\'.\n"
+      abort "You may be able to fix this by running 'rake setup\'.\n"
     end
     puts "OK"
   end
 
   necessary_gems.each do |gem|
     printf "Checking for Ruby gem %s...", gem
-    unless system("gem list --local -q --no-versions --no-details #{gem} | egrep '^#{gem}$'")
+    unless system("gem list --local -q --no-versions --no-details #{gem} | egrep '^#{gem}$' > /dev/null 2>&1")
       puts "\nSorry, I wasn't able to find the \'#{gem}\' gem on your system."
-#      abort "You may be able to fix this by running \'sudo rake setup\'.\n"
+      abort "You may be able to fix this by running \'gem install #{gem}\'.\n"
     end
     puts "OK"
   end
 
+  printf "Checking for additional gems via 'bundle check'..."
+  unless %x{bundle check}
+    abort ''
+  end
+  puts "OK"
+
+  puts "\n" 
+  puts '*' * 80
   puts "Congratulations! Everything looks a-ok."
+  puts '*' * 80
+  puts "\n"
 end
 
 desc 'Install the necessary Vagrant plugins'
@@ -58,6 +73,10 @@ task :setup do
     unless system("gem install #{gem}")
       abort "Install of #{gem} failed. Exiting..."
     end
+  end
+
+  unless %x{bundle check} 
+    system('bundle install')
   end
 
 end
