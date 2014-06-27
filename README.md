@@ -1,4 +1,4 @@
-# devtest-puppet-rbenv
+# puppet-module-devtest-skeleton
 
 You'll need to have downloaded and installed the following:
 * VirtualBox
