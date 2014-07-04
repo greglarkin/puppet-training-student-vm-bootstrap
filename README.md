@@ -31,6 +31,6 @@ $ rake deps
 To start up the environment: 
 
 ```bash
-$ rake r10k
+$ rake modules
 $ vagrant up 
 ```
