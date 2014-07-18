@@ -10,7 +10,7 @@ task :default => 'deps'
 
 necessary_programs = %w(VirtualBox vagrant)
 necessary_plugins = %w(vagrant-auto_network vagrant-pe_build vagrant-vmware-fusion)
-necessary_gems = %w(bundle)
+necessary_gems = %w(bundle librarian-puppet)
 
 desc 'Check for the environment dependencies'
 task :deps do
