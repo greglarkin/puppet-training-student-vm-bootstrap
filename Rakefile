@@ -84,7 +84,12 @@ end
 desc 'Build out the modules directory for devtest'
 task :modules do
   puts "Building out Puppet module directory..."
-  unless system('cd puppet && librarian-puppet install --verbose')
+  confdir = Dir.pwd
+  moduledir = "#{confdir}/puppet/modules"
+  puppetfile = "#{confdir}/puppet/Puppetfile"
+  puts "Placing modules in #{moduledir}"
+  puts "Using Puppetfile at #{puppetfile}"
+  unless system("PUPPETFILE=#{puppetfile} PUPPETFILE_DIR=#{moduledir} /usr/bin/r10k puppetfile install")
     abort 'Failed to build out Puppet module directory. Exiting...'
   end
   puts "OK"
