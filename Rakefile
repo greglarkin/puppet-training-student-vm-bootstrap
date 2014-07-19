@@ -10,7 +10,7 @@ task :default => 'deps'
 
 necessary_programs = %w(VirtualBox vagrant)
 necessary_plugins = %w(vagrant-auto_network vagrant-pe_build vagrant-vmware-fusion)
-necessary_gems = %w(bundle librarian-puppet)
+necessary_gems = %w(bundle r10k)
 
 desc 'Check for the environment dependencies'
 task :deps do
@@ -82,7 +82,7 @@ task :setup do
 end
 
 desc 'Build out the modules directory for devtest'
-task :modules do
+task :deploy do
   puts "Building out Puppet module directory..."
   confdir = Dir.pwd
   moduledir = "#{confdir}/puppet/modules"
@@ -92,5 +92,17 @@ task :modules do
   unless system("PUPPETFILE=#{puppetfile} PUPPETFILE_DIR=#{moduledir} /usr/bin/r10k puppetfile install")
     abort 'Failed to build out Puppet module directory. Exiting...'
   end
-  puts "OK"
+  puts "Bringing up vagrant machines"
+  unless system("vagrant up master agent1") 
+	  abort 'Vagrant up failed. Exiting...'
+  end
+  puts "Vagrant Machines Up Successfully\n"
+  puts "Access master at 'vagrant ssh master' or 'ssh vagrant@10.10.100.100'\n"
+  puts "Password = vagrant"
+  puts "-----"
+  puts "Puppet modules brought in via puppet/Puppetfile are available on the Vagrant master VM at /etc/puppetlabs/puppet/modules"
+  puts "-----"
+  puts "Contact git owner for PR's & bug fixes"
+  puts "-----"
+  puts "Done."
 end
