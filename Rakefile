@@ -106,3 +106,9 @@ task :deploy do
   puts "-----"
   puts "Done."
 end
+
+desc "Destroy Vagrant Machines"
+task :destroy do
+	puts ""
+end
+

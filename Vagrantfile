@@ -6,29 +6,21 @@ VAGRANTFILE_API_VERSION = "2"
 
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
-  config.vm.box = "centos-64-x64-nocm"
-  config.vm.box_url = "http://puppet-vagrant-boxes.puppetlabs.com/centos-64-x64-fusion503-nocm.box"
-
-  config.pe_build.version       = '3.3.0'
+  config.vm.box = "centos-65-x64-vbox436-nocm"
+  config.vm.box_url = "http://puppet-vagrant-boxes.puppetlabs.com/centos-65-x64-virtualbox-nocm.box"
   config.pe_build.download_root = 'https://s3.amazonaws.com/pe-builds/released/:version'
+  config.pe_build.version = "3.2.0"
 
 ## Master
   config.vm.define :master do |master|
 
-    master.vm.provider :vmware_fusion do |v|
-      v.vmx["memsize"]  = "4096"
-      v.vmx["numvcpus"] = "4"
-    end
-
     master.vm.network :private_network, ip: "10.10.100.100"
-
     master.vm.hostname = 'master.puppetlabs.vm'
     master.vm.provision :hosts
-
     master.vm.provision :pe_bootstrap do |pe|
       pe.role = :master
+      pe.answer_file = 'answers/master-answers.txt'
     end
-
     master.vm.synced_folder "puppet/modules", "/etc/puppetlabs/puppet/modules"
     master.vm.synced_folder "puppet/manifests", "/etc/puppetlabs/puppet/manifests"
 
@@ -39,7 +31,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 ## agent 1
   config.vm.define :agent1 do |agent|
 
-    agent.vm.provider :vmware_fusion
     agent.vm.network :private_network, ip: "10.10.100.111"
 
     agent.vm.hostname = 'agent1.puppetlabs.vm'
@@ -53,17 +44,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
 ## Gitlab 
   config.vm.define :gitlab do |agent|
-
-    agent.vm.provider :vmware_fusion do |v|
-      v.vmx["memsize"]  = "2048"
-      v.vmx["numvcpus"] = "2"
-    end
-
     agent.vm.network :private_network, ip: "10.10.100.112"
-
     agent.vm.hostname = 'gitlab.puppetlabs.vm'
     agent.vm.provision :hosts
-
     agent.vm.provision :pe_bootstrap do |pe|
       pe.role = :agent
       pe.master = 'master.puppetlabs.vm'
