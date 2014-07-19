@@ -107,8 +107,15 @@ task :deploy do
   puts "Done."
 end
 
-desc "Destroy Vagrant Machines"
-task :destroy do
-	puts ""
+desc 'Destroy Vagrant Machines'
+	task :destroy do
+	puts "Are you sure you want to destroy the environment? [y/n]"
+	STDOUT.flush
+	ans = STDIN.gets.chomp
+	if ans =~ /^y/
+		system("vagrant destroy -f")
+	else
+		abort 'Aborting vagrant destroy, exiting...'
+	end		
 end
 
