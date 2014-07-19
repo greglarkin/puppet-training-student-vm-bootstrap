@@ -15,6 +15,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 ## Master
   config.vm.define :master do |master|
 
+    master.vm.provider :vmware_fusion do |v|
+      v.vmx["memsize"]  = "4096"
+      v.vmx["numvcpus"] = "4"
+    end
+
     master.vm.network :private_network, ip: "10.10.100.100"
 
     master.vm.hostname = 'master.puppetlabs.vm'
@@ -34,7 +39,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 ## agent 1
   config.vm.define :agent1 do |agent|
 
-    #agent.vm.provider :vmware_fusion
+    agent.vm.provider :vmware_fusion
     agent.vm.network :private_network, ip: "10.10.100.111"
 
     agent.vm.hostname = 'agent1.puppetlabs.vm'
@@ -48,6 +53,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
 ## Gitlab 
   config.vm.define :gitlab do |agent|
+
+    agent.vm.provider :vmware_fusion do |v|
+      v.vmx["memsize"]  = "2048"
+      v.vmx["numvcpus"] = "2"
+    end
 
     agent.vm.network :private_network, ip: "10.10.100.112"
 
