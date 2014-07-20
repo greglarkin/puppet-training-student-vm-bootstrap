@@ -107,8 +107,19 @@ task :deploy do
   puts "Done."
 end
 
+desc 'Pull down modules in Puppetfile'
+rake :pull do
+	confdir = Dir.pwd
+	moduledir = "#{confdir}/puppet/modules"
+	puppetfile = "#{confdir}/puppet/Puppetfile"
+	puts "Pulling down new modules in #{puppetfile} to #{moduledir}"
+	unless system("PUPPETFILE=#{puppetfile} PUPPETFILE_DIR=#{moduledir} /usr/bin/r10k puppetfile install")
+		abort 'Failed to build out Puppet module directory. Exiting...'
+	end
+	puts "New modules successfully pulled down" 
+end
 desc 'Destroy Vagrant Machines'
-	task :destroy do
+task :destroy do
 	puts "Are you sure you want to destroy the environment? [y/n]"
 	STDOUT.flush
 	ans = STDIN.gets.chomp
