@@ -1,6 +1,0 @@
----
-vms:
-- name: centos65-0
-  box: centos-65-x64-vbox436-nocm
-  roles:
-  - pe-puppet-agent
