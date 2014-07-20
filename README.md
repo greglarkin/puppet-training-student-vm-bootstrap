@@ -28,9 +28,21 @@ $ rake deps
 ```
 
 # Usage
-To start up the environment: 
+To start up the environment: Pulls down modules in the Puppetfile, boots a master and an agent and symlinks in the modules in puppet/modules to the master VM. 
 
 ```bash
-$ rake modules
-$ vagrant up 
+$ rake deploy 
 ```
+
+To pull down new modules live while the VM is running:
+
+```
+$ rake pull
+```
+
+To destroy the environment:
+
+```
+$ rake destroy
+```
+
