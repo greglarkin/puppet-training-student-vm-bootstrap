@@ -16,9 +16,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     master.vm.provision :pe_bootstrap do |pe|
       pe.role = :master
     end
-#    master.vm.synced_folder "puppet/modules", "/etc/puppetlabs/puppet/modules"
-#    master.vm.synced_folder "puppet/manifests", "/etc/puppetlabs/puppet/manifests"
+    master.vm.synced_folder "puppet/modules", "/tmp/modules"
+    master.vm.synced_folder "puppet/manifests", "/tmp/manifests"
     master.vm.provision "shell", inline: "service iptables stop"
+    master.vm.provision "shell", inline: "rm -rf /etc/puppetlabs/puppet/modules/ && ln -s /tmp/modules/ /etc/puppetlabs/puppet/"
+    master.vm.provision "shell", inline: "rm -rf /etc/puppetlabs/puppet/manifests/ && ln -s /tmp/manifests/ /etc/puppetlabs/puppet/"
   end
 
 ## Agent 
