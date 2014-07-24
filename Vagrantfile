@@ -3,8 +3,7 @@
 # Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
 VAGRANTFILE_API_VERSION = "2"
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
-  config.vm.box = "centos-6.5-pe-3.3.0"
-  config.vm.box_url = "/Users/malnick/projects/vagrant-boxes/centos-6.5-pe-3.3.0.box"
+  config.vm.box = "puppetlabs/puppet-training-centos-6.5-pe-3.3.0"
   config.pe_build.download_root = 'https://s3.amazonaws.com/pe-builds/released/:version'
   config.pe_build.version = "3.3.0"
 
@@ -25,7 +24,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
 ## Agent 
   config.vm.define :agent1 do |agent|
-    agent.vm.network :private_network, ip: "10.10.100.111"
+    agent.vm.network :private_network, ip: "10.10.100.111", :bridge => 'eth0', :mac => "080027XXXXXX"
     agent.vm.hostname = 'agent1.puppetlabs.vm'
     agent.vm.provision :hosts
     agent.vm.provision :pe_bootstrap do |pe|
@@ -34,20 +33,17 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     end
   end
 
-## Gitlab 
-#  config.vm.define :gitlab do |agent|
-#    agent.vm.network :private_network, ip: "10.10.100.112"
-#    agent.vm.hostname = 'gitlab.puppetlabs.vm'
+## Ubuntu Agent 
+#  config.vm.define :agent1 do |agent|
+#    agent.vm.box = "ubuntu-6.5-pe-3.3.0"
+#    config.vm.box_url = "puppetlabs/ubuntu--pe-3.3.0.box"
+#    agent.vm.network :private_network, ip: "10.10.100.112", :bridge => 'eth0', :mac => "080027XXXXXX"
+#    agent.vm.hostname = 'ubuntu_agent.puppetlabs.vm'
 #    agent.vm.provision :hosts
 #    agent.vm.provision :pe_bootstrap do |pe|
-#      pe.role = :agent
+#      pe.role   =  :agent
 #      pe.master = 'master.puppetlabs.vm'
-#    end
-#    agent.vm.provision "shell", inline: 'echo "PATH=$PATH:/opt/puppet/bin" >> $HOME/.bashrc'
-#    agent.vm.provision "puppet" do |p|
-#    	p.manifests_path = "vm_provision/manifests"
-#	p.module_path = "vm_provision/modules"
-#	p.manifest_file = "deploy_gitlab.pp"
 #    end
 #  end
 end
+
