@@ -11,6 +11,8 @@ task :default => 'deps'
 necessary_programs = %w(VirtualBox vagrant)
 necessary_plugins = %w(vagrant-auto_network vagrant-pe_build vagrant-vmware-fusion)
 necessary_gems = %w(bundle r10k)
+dir_structure = %w(puppet puppet/modules puppet/manifests) 
+file_structure = %w(puppet/Puppetfile puppet/manifests/site.pp)
 
 desc 'Check for the environment dependencies'
 task :deps do
@@ -78,7 +80,33 @@ task :setup do
   unless %x{bundle check} 
     system('bundle install')
   end
+end
 
+desc "Create dir structure"
+task :create_structure do 
+puts "Checking CWD for directory structure..."
+  dir_structure.each do |d|
+	cwd = Dir.getwd
+	check_dir = "#{cwd}/#{d}"
+	if Dir.exists?(check_dir)
+		puts "#{check_dir} exists, moving on."
+	else
+		puts "#{check_dir} does not exist, creating it."
+		Dir.mkdir("#{check_dir}", 0777)
+	end
+  end
+  file_structure.each do |f|
+	fqp = "#{Dir.getwd}/#{f}"
+	if File.exists?(fqp)
+		puts "#{fqp} exists, moving on."
+	elsif f == "puppet/Puppetfile" 
+		puts "Writing a base Puppetfile with 'stdlib'"
+		File.open(fqp, 'w') {|file| file.write("mod 'stdlib', :git => 'https://github.com/puppetlabs/puppetlabs-stdlib'")}
+	else
+		puts "Creating stub file for #{f}"
+		File.open(fqp, 'w') {|file| file.write("# STUB FILE FOR #{f}")}
+	end
+  end
 end
 
 desc 'Build out the modules directory for devtest'
@@ -108,7 +136,7 @@ task :deploy do
 end
 
 desc 'Pull down modules in Puppetfile'
-rake :pull do
+task :pull do
 	confdir = Dir.pwd
 	moduledir = "#{confdir}/puppet/modules"
 	puppetfile = "#{confdir}/puppet/Puppetfile"
