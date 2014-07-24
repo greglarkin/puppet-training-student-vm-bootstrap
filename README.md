@@ -27,3 +27,8 @@ To do this I wrote a Rakefile that pulls down modules via r10k (if needed) and a
 1. ```rake setup```
 2  ```rake deploy```
 
+If for some reason you cloned this repo and the directory structure got hosed you can use
+
+	```rake create_structure```
+
+
