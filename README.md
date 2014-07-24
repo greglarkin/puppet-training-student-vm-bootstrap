@@ -31,6 +31,6 @@ To do this I wrote a Rakefile that pulls down modules via r10k (if needed) and a
 
 If for some reason you cloned this repo and the directory structure got hosed you can use
 
-	```rake create_structure```
+```rake create_structure```
 
 
