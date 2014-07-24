@@ -1,4 +1,0 @@
----
-pe_build:
-  version: 3.2.3
-  download_root: http://s3.amazonaws.com/pe-builds/released/:version
