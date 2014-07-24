@@ -3,14 +3,14 @@
 # Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
 VAGRANTFILE_API_VERSION = "2"
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
-  config.vm.box = "centos-64-x64-vbox4210.box"
-  config.vm.box_url = "http://puppet-vagrant-boxes.puppetlabs.com/centos-64-x64-vbox4210.box" 
+  config.vm.box = "centos-6.5-pe-3.3.0"
+  config.vm.box_url = "/Users/malnick/projects/vagrant-boxes/centos-6.5-pe-3.3.0.box"
   config.pe_build.download_root = 'https://s3.amazonaws.com/pe-builds/released/:version'
-  config.pe_build.version = "3.2.3"
+  config.pe_build.version = "3.3.0"
 
 ## Master
   config.vm.define :master do |master|
-    master.vm.network :private_network, ip: "10.10.100.100"
+    master.vm.network :private_network, ip: "10.10.100.100", :bridge => 'eth0', :mac => "080027XXXXXX"
     master.vm.hostname = 'master.puppetlabs.vm'
     master.vm.provision :hosts
     master.vm.provision :pe_bootstrap do |pe|
