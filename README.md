@@ -1,36 +1,29 @@
-# puppet-module-devtest-skeleton
+# Puppet Training Bootstrap
+This vagrant environment deploys a puppet master, agent and ubuntu agent for use in public/private trainings.
 
-You'll need to have downloaded and installed the following:
-* VirtualBox
-* Vagrant
+## Deployment
+I wanted to create a way to easily write modules using my local editor and dotfiles (tmux etc) but have them available on the VM for class. 
 
-For additional dependencies and setup see the Install section below.
+To do this I wrote a Rakefile that pulls down modules via r10k (if needed) and adds them to puppet/modules, then deploys the three VM's I use most often in class.
 
-# Install
-```bash
-$ sudo gem install bundler
-$ sudo bundle
-```
-To check whether or not your system has all of the dependencies necessary to run the Vagrant environments:
+1. Master
 
-```bash
-$ rake deps
-Checking environment dependencies...
-...
-Congratulations! Everything looks a-ok.
-```
+	A standard master VM 
 
-If the above step fails on available Vagrant modules, run:
+2. Agent
 
-```bash
-$ sudo rake setup
-$ rake deps
-```
+	A standard agent for testing code on / demonstration
 
-# Usage
-To start up the environment: 
+3. Ubuntu Agent
 
-```bash
-$ rake modules
-$ vagrant up 
-```
+	Useful during the Apache lab to test multi-OS modules
+
+## Pipeline
+
+1. Add modules to ```puppet/Puppetfile```
+
+	I usually add puppetlabs-apache, mysql, stdlib, etc that I will need during the training. 
+
+1. ```rake setup```
+2  ```rake deploy```
+
