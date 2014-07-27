@@ -1,8 +1,8 @@
 *.swp
 .vagrant
 .pe_build
-puppet/Puppetfile.lock
-puppet/.librarian
 puppet/modules
-puppet/.tmp
+!puppet/Puppetfile
+!puppet/manifests
+puppet/
 Gemfile.lock
