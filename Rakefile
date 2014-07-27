@@ -14,7 +14,7 @@ necessary_gems = %w(bundle r10k)
 dir_structure = %w(puppet puppet/modules puppet/manifests) 
 file_structure = %w(puppet/Puppetfile puppet/manifests/site.pp)
 
-desc 'Check for the environment dependencies'
+desc "Setup the local environment" 
 task :setup do
   puts 'Checking environment dependencies...'
 
@@ -64,45 +64,6 @@ task :setup do
   Rake::Task[:create_structure].execute
 end
 
-desc "Push new modules to git, add none existing ones to Pfile and pull them down"
-task :test do
-	cwd = File.dirname(__FILE__)
-	modules = [] 
-	Dir.foreach("#{cwd}/puppet") do |m|
-		if m =~ /^puppet/ 
-			puts m
-			modules.push(m)	
-			new_modules = []
-			puppetfile = File.open("#{cwd}/puppet/Puppetfile").each_line do |line| 
-				puts "in open"
-				if line =~ /#{m}/
-					puts "#{m} is already in puppet/Puppetfile, not adding."
-				else
-					puts "Adding new module #{m} to puppet/Puppetfile"
-					new_modules.push(m)
-				end
-			end
-
-			File.open("#{cwd}/puppet/puppetfile", 'a') do |file|
-				new_modules.each do |new|
-					file.write("mod '#{new}', :git => 'https://github.com/malnick/#{new}' \n")
-				end
-			end
-		end
-		
-	end
-	modules.each do |repo| 
-		puts "Pushing new code from #{repo} to git..."
-		if system("ls #{cwd}/puppet/#{repo}/.git")
-			unless system("cd #{cwd}/puppet/#{repo} && git add . && git commit -m 'automated push via rake' && git push")
-				abort "Failed to push from the #{repo} repo"
-			end
-		else
-			puts "Please initialize a git repo for #{repo}"
-		end
-	end
-	Rake::Task["pull"].execute
-end
 
 desc "Create dir structure"
 task :create_structure do 
@@ -137,8 +98,17 @@ task :deploy do
   confdir = Dir.pwd
   moduledir = "#{confdir}/puppet/modules"
   puppetfile = "#{confdir}/puppet/Puppetfile"
-  puts "Placing modules in #{moduledir}"
-  puts "Using Puppetfile at #{puppetfile}"
+  existing_mods = Dir.foreach(moduledir) do |bak|
+	if bak !~ /^./
+		puts "Backing up #{bak} to #{confdir}/puppet/#{bak}"
+	  	unless system("cp -R #{moduledir}/#{bak} #{confdir}/puppet/")
+		  abort "Failed to copy #{bak}, aborting..."
+		end
+	else
+		puts "#{bak} is a dotfile, not backing up."
+	end
+  end
+  puts "Re-populating #{moduledir} with modules from Puppetfile."
   unless system("PUPPETFILE=#{puppetfile} PUPPETFILE_DIR=#{moduledir} /usr/bin/r10k puppetfile install")
     abort 'Failed to build out Puppet module directory. Exiting...'
   end
