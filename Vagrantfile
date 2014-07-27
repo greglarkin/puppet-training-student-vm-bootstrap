@@ -83,12 +83,27 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     end
   end
 
- config.vm.define :student5 do |agent|
+config.vm.define :student4 do |agent|
     agent.vm.provider 'virtualbox' do |p|
        p.memory = '1024'
        p.cpus = '1'
     end
     agent.vm.network :private_network, ip: "10.10.100.115", :bridge => 'eth0', :mac => "080027XXXXXX"
+    agent.vm.hostname = 'student4.puppetlabs.vm'
+    agent.vm.provision :hosts
+    agent.vm.provision :pe_bootstrap do |pe|
+      pe.role   =  :agent
+      pe.master = 'master.puppetlabs.vm'
+    end
+  end
+
+
+ config.vm.define :student5 do |agent|
+    agent.vm.provider 'virtualbox' do |p|
+       p.memory = '1024'
+       p.cpus = '1'
+    end
+    agent.vm.network :private_network, ip: "10.10.100.116", :bridge => 'eth0', :mac => "080027XXXXXX"
     agent.vm.hostname = 'student5.puppetlabs.vm'
     agent.vm.provision :hosts
     agent.vm.provision :pe_bootstrap do |pe|

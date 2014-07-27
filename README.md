@@ -16,5 +16,5 @@ Bootstraps VM's for class in the case that students can not boot their own VMs
 	Will install PE 3.3.0 on agents and deploy them along with a master
 	
 	```rake deploy```
-
-5. You will need to 
+	
+	You *may* get an error on your first deploy for the MAC on the VM not being set, run ```rake deploy``` again **without** destroy and it should be fine. 

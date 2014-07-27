@@ -64,7 +64,6 @@ task :setup do
   Rake::Task[:create_structure].execute
 end
 
-
 desc "Create dir structure"
 task :create_structure do 
 puts "Checking CWD for directory structure..."
@@ -99,17 +98,13 @@ task :pull do
   moduledir = "#{confdir}/puppet/modules"
   puppetfile = "#{confdir}/puppet/Puppetfile"
   existing_mods = Dir.foreach(moduledir) do |bak|
-	if bak !~ /^./
 	puts "Backing up #{bak} to #{confdir}/puppet/#{bak}"
-	  	unless system("cp -R #{moduledir}/#{bak} #{confdir}/puppet/")
-		  abort "Failed to copy #{bak}, aborting..."
-		end
-	else
-		puts "#{bak} is a dotfile, not backing up."
+	unless system("rsync -av --exclude='.*' #{moduledir}/#{bak} #{confdir}/puppet") 
+		abort "Failed to copy #{bak}, aborting..."
 	end
   end
   puts "Re-populating #{moduledir} with modules from Puppetfile."
-  unless system("PUPPETFILE=#{puppetfile} PUPPETFILE_DIR=#{moduledir} /usr/bin/r10k puppetfile install")
+  unless system("PUPPETFILE=#{puppetfile} PUPPETFILE_DIR=#{moduledir} /usr/bin/r10k puppetfile install -v")
     abort 'Failed to build out Puppet module directory. Exiting...'
   end
   puts "Pulling down pltraining/fundamentals"
@@ -122,7 +117,7 @@ desc "Deploy environment"
 task :deploy do
   Rake::Task[:pull].execute
   puts "Bringing up vagrant machines"
-  unless system("vagrant up master agent1") 
+  unless system("vagrant up") 
 	  abort 'Vagrant up failed. Exiting...'
   end
   puts "Vagrant Machines Up Successfully\n"

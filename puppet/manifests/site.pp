@@ -1,1 +1,1 @@
-# STUB FILE FOR puppet/manifests/site.pp
+# STUB FILE FOR puppet/manifests/site.ppnode default {  include fundamentals}
