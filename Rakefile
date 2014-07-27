@@ -99,7 +99,7 @@ task :pull do
   puppetfile = "#{confdir}/puppet/Puppetfile"
   existing_mods = Dir.foreach(moduledir) do |bak|
 	puts "Backing up #{bak} to #{confdir}/puppet/#{bak}"
-	unless system("rsync -av --exclude='.*' #{moduledir}/#{bak} #{confdir}/puppet") 
+	unless system("rsync -av --exclude='.*' #{moduledir}/#{bak} #{confdir}/puppet/mod_bak") 
 		abort "Failed to copy #{bak}, aborting..."
 	end
   end
