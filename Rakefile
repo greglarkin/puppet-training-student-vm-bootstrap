@@ -93,7 +93,7 @@ puts "Checking CWD for directory structure..."
 end
 
 desc 'Deploying modules form Puppetfile and booting master and agent VMs' 
-task :deploy do
+task :pull do
   puts "Building out Puppet module directory..."
   confdir = Dir.pwd
   moduledir = "#{confdir}/puppet/modules"
@@ -112,6 +112,11 @@ task :deploy do
   unless system("PUPPETFILE=#{puppetfile} PUPPETFILE_DIR=#{moduledir} /usr/bin/r10k puppetfile install")
     abort 'Failed to build out Puppet module directory. Exiting...'
   end
+end
+
+desc "Deploy environment"
+task :deploy do
+  Rake::Task[:pull].execute
   puts "Bringing up vagrant machines"
   unless system("vagrant up master agent1") 
 	  abort 'Vagrant up failed. Exiting...'
@@ -127,17 +132,6 @@ task :deploy do
   puts "Done."
 end
 
-desc 'Pull down modules in Puppetfile'
-task :pull do
-	confdir = Dir.pwd
-	moduledir = "#{confdir}/puppet/modules"
-	puppetfile = "#{confdir}/puppet/Puppetfile"
-	puts "Pulling down new modules in #{puppetfile} to #{moduledir}"
-	unless system("PUPPETFILE=#{puppetfile} PUPPETFILE_DIR=#{moduledir} /usr/bin/r10k puppetfile install")
-		abort 'Failed to build out Puppet module directory. Exiting...'
-	end
-	puts "New modules successfully pulled down" 
-end
 desc 'Destroy Vagrant Machines'
 task :destroy do
 	puts "Are you sure you want to destroy the environment? [y/n]"
