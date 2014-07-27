@@ -100,7 +100,7 @@ task :pull do
   puppetfile = "#{confdir}/puppet/Puppetfile"
   existing_mods = Dir.foreach(moduledir) do |bak|
 	if bak !~ /^./
-		puts "Backing up #{bak} to #{confdir}/puppet/#{bak}"
+	puts "Backing up #{bak} to #{confdir}/puppet/#{bak}"
 	  	unless system("cp -R #{moduledir}/#{bak} #{confdir}/puppet/")
 		  abort "Failed to copy #{bak}, aborting..."
 		end
@@ -111,6 +111,10 @@ task :pull do
   puts "Re-populating #{moduledir} with modules from Puppetfile."
   unless system("PUPPETFILE=#{puppetfile} PUPPETFILE_DIR=#{moduledir} /usr/bin/r10k puppetfile install")
     abort 'Failed to build out Puppet module directory. Exiting...'
+  end
+  puts "Pulling down pltraining/fundamentals"
+  unless system("puppet module install pltraining/fundamentals --modulepath #{moduledir}")
+	  abort "Failed to pull down pltraining/fundamentals"
   end
 end
 

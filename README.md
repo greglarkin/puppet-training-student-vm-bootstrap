@@ -1,36 +1,20 @@
-# Puppet Training Bootstrap
-This vagrant environment deploys a puppet master, agent and ubuntu agent for use in public/private trainings.
+# Student VM Bootstrap
+Bootstraps VM's for class in the case that students can not boot their own VMs
 
-## Deployment
-I wanted to create a way to easily write modules using my local editor and dotfiles (tmux etc) but have them available on the VM for class. 
+## Usage
 
-To do this I wrote a Rakefile that pulls down modules via r10k (if needed) and adds them to puppet/modules, then deploys the three VM's I use most often in class.
+1. Modify the Vagrantfile for agent VM's as you see fit, ensure the IPs are are in the correct subnet. 
 
-1. Master
+2. Modify puppet/Puppetfile with the modules you need for class.
 
-	A standard master VM 
+3. Run the setup:
 
-2. Agent
+	rake setup
 
-	A standard agent for testing code on / demonstration
+4. Deploy the environment:
 
-3. Ubuntu Agent
+	Will install PE 3.3.0 on agents and deploy them along with a master
+	
+	```rake deploy```
 
-	Useful during the Apache lab to test multi-OS modules
-
-## Pipeline
-
-1. Add modules to ```puppet/Puppetfile```
-
-	I usually add puppetlabs-apache, mysql, stdlib, etc that I will need during the training. 
-
-2. ```rake setup```
-
-3. ```rake deploy```
-
-
-If for some reason you cloned this repo and the directory structure got hosed you can use
-
-```rake create_structure```
-
-
+5. You will need to 
