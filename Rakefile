@@ -9,13 +9,13 @@ end
 task :default => 'deps'
 
 necessary_programs = %w(VirtualBox vagrant)
-necessary_plugins = %w(vagrant-auto_network vagrant-pe_build vagrant-vmware-fusion)
+necessary_plugins = %w(vagrant-auto_network vagrant-pe_build)
 necessary_gems = %w(bundle r10k)
 dir_structure = %w(puppet puppet/modules puppet/manifests) 
 file_structure = %w(puppet/Puppetfile puppet/manifests/site.pp)
 
 desc 'Check for the environment dependencies'
-task :deps do
+task :setup do
   puts 'Checking environment dependencies...'
 
   printf "Is this a POSIX OS?..."
@@ -32,54 +32,76 @@ task :deps do
     puts "OK"
   end
 
+  
   necessary_plugins.each do |plugin|
-    printf "Checking for vagrant plugin %s...", plugin
-    unless %x{vagrant plugin list}.include? plugin
-      puts "\nSorry, I wasn't able to find the Vagrant plugin \'#{plugin}\' on your system."
-      abort "You may be able to fix this by running 'rake setup\'.\n"
-    end
-    puts "OK"
+	printf "Checking for vagrant plugin %s...", plugin
+    	unless %x{vagrant plugin list}.include? plugin
+		puts "The Vagrant pluging %s wasn't found, installing...", plugin
+    		unless system("vagrant plugin install #{plugin} --verbose")
+      			abort "Install of #{plugin} failed. Exiting..."
+		end
+    	end
   end
 
   necessary_gems.each do |gem|
-    printf "Checking for Ruby gem %s...", gem
-    unless system("gem list --local -q --no-versions --no-details #{gem} | egrep '^#{gem}$' > /dev/null 2>&1")
-      puts "\nSorry, I wasn't able to find the \'#{gem}\' gem on your system."
-      abort "You may be able to fix this by running \'gem install #{gem}\'.\n"
-    end
-    puts "OK"
-  end
-
-  printf "Checking for additional gems via 'bundle check'..."
-  unless %x{bundle check}
-    abort ''
-  end
-  puts "OK"
-
-  puts "\n" 
-  puts '*' * 80
-  puts "Congratulations! Everything looks a-ok."
-  puts '*' * 80
-  puts "\n"
-end
-
-desc 'Install the necessary Vagrant plugins'
-task :setup do
-  necessary_plugins.each do |plugin|
-    unless system("vagrant plugin install #{plugin} --verbose")
-      abort "Install of #{plugin} failed. Exiting..."
-    end
-  end
-
-  necessary_gems.each do |gem|
-    unless system("gem install #{gem}")
-      abort "Install of #{gem} failed. Exiting..."
-    end
+ 	printf "Checking for Ruby gem %s...", gem
+    	unless system("gem list --local -q --no-versions --no-details #{gem} | egrep '^#{gem}$' > /dev/null 2>&1")
+		puts "The Gem %s wasn't found, installing...", gem
+    		unless system("gem install #{gem}")
+      			abort "Install of #{gem} failed. Exiting..."
+		end
+    	end
+	printf "Checking for additional gems via 'bundle check'..."
+  	unless %x{bundle check}
+    		abort ''
+  	end
+  	puts "OK"
   end
 
   unless %x{bundle check} 
     system('bundle install')
   end
+  Rake::Task[:create_structure].execute
+end
+
+desc "Push new modules to git, add none existing ones to Pfile and pull them down"
+task :test do
+	cwd = File.dirname(__FILE__)
+	modules = [] 
+	Dir.foreach("#{cwd}/puppet") do |m|
+		if m =~ /^puppet/ 
+			puts m
+			modules.push(m)	
+			new_modules = []
+			puppetfile = File.open("#{cwd}/puppet/Puppetfile").each_line do |line| 
+				puts "in open"
+				if line =~ /#{m}/
+					puts "#{m} is already in puppet/Puppetfile, not adding."
+				else
+					puts "Adding new module #{m} to puppet/Puppetfile"
+					new_modules.push(m)
+				end
+			end
+
+			File.open("#{cwd}/puppet/puppetfile", 'a') do |file|
+				new_modules.each do |new|
+					file.write("mod '#{new}', :git => 'https://github.com/malnick/#{new}' \n")
+				end
+			end
+		end
+		
+	end
+	modules.each do |repo| 
+		puts "Pushing new code from #{repo} to git..."
+		if system("ls #{cwd}/puppet/#{repo}/.git")
+			unless system("cd #{cwd}/puppet/#{repo} && git add . && git commit -m 'automated push via rake' && git push")
+				abort "Failed to push from the #{repo} repo"
+			end
+		else
+			puts "Please initialize a git repo for #{repo}"
+		end
+	end
+	Rake::Task["pull"].execute
 end
 
 desc "Create dir structure"
@@ -109,7 +131,7 @@ puts "Checking CWD for directory structure..."
   end
 end
 
-desc 'Build out the modules directory for devtest'
+desc 'Deploying modules form Puppetfile and booting master and agent VMs' 
 task :deploy do
   puts "Building out Puppet module directory..."
   confdir = Dir.pwd
