@@ -7,7 +7,6 @@ rescue LoadError => e
 end
 
 task :default => 'deps'
-
 necessary_programs = %w(VirtualBox vagrant)
 necessary_plugins = %w(vagrant-auto_network vagrant-pe_build)
 necessary_gems = %w(bundle r10k)
@@ -96,10 +95,11 @@ task :pull do
   puts "Building out Puppet module directory..."
   confdir = Dir.pwd
   moduledir = "#{confdir}/puppet/modules"
+  bakmodule = "#{confdir}/puppet/bak_modules"
   puppetfile = "#{confdir}/puppet/Puppetfile"
   existing_mods = Dir.foreach(moduledir) do |bak|
 	puts "Backing up #{bak} to #{confdir}/puppet/#{bak}"
-	unless system("rsync -av --exclude='.*' #{moduledir}/#{bak} #{confdir}/puppet/mod_bak") 
+	unless system("rsync -av --exclude='.*' #{moduledir}/#{bak} #{bakmodule}") 
 		abort "Failed to copy #{bak}, aborting..."
 	end
   end
@@ -116,19 +116,25 @@ end
 desc "Deploy environment"
 task :deploy do
   Rake::Task[:pull].execute
+
   puts "Bringing up vagrant machines"
   unless system("vagrant up") 
 	  abort 'Vagrant up failed. Exiting...'
   end
-  puts "Vagrant Machines Up Successfully\n"
-  puts "Access master at 'vagrant ssh master' or 'ssh vagrant@10.10.100.100'\n"
-  puts "Password = vagrant"
+  puts "Training VM's Up Successfully\n"
+  puts "-----"
+  puts "Access master at 'vagrant ssh master' or 'ssh root@10.10.100.100'\n"
+  puts "Password = puppet"
+  puts "-----"
+  puts "Student VM's:\n"
+  puts "agent[1-5].puppetlabs.vm"
+  puts "root/puppet"
   puts "-----"
   puts "Puppet modules brought in via puppet/Puppetfile are available on the Vagrant master VM at /etc/puppetlabs/puppet/modules"
   puts "-----"
   puts "Contact git owner for PR's & bug fixes"
   puts "-----"
-  puts "Done."
+  Rake::Task['docs']
 end
 
 desc 'Destroy Vagrant Machines'
@@ -142,4 +148,24 @@ task :destroy do
 		abort 'Aborting vagrant destroy, exiting...'
 	end		
 end
+
+desc 'serve the puppet docs website locally'
+task :docs do
+	puts "Is this your first time running docs? (we may need to generate the content if so)"
+	gen = STDIN.gets 
+	if gen =~ /^y/
+		Dir.chdir('puppet-docs')
+		unless system('rake generate')
+			abort 'Failed to generate docs, aborting.'
+		end
+	else
+		puts "Ok, serving docs - if you have content issues or need to update consider running 'rake docs' and 'y' to the previous question\n"
+		puts "---"
+	end
+	Dir.chdir('puppet-docs')
+	unless system('rackup')
+		abort 'Failed to serve docs'
+	end
+end
+
 
