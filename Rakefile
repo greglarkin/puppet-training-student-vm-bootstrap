@@ -35,7 +35,7 @@ task :setup do
   necessary_plugins.each do |plugin|
 	printf "Checking for vagrant plugin %s...", plugin
     	unless %x{vagrant plugin list}.include? plugin
-		puts "The Vagrant pluging %s wasn't found, installing...", plugin
+		puts "The Vagrant plugin #{plugin} wasn't found, installing..."
     		unless system("vagrant plugin install #{plugin} --verbose")
       			abort "Install of #{plugin} failed. Exiting..."
 		end
@@ -45,7 +45,7 @@ task :setup do
   necessary_gems.each do |gem|
  	printf "Checking for Ruby gem %s...", gem
     	unless system("gem list --local -q --no-versions --no-details #{gem} | egrep '^#{gem}$' > /dev/null 2>&1")
-		puts "The Gem %s wasn't found, installing...", gem
+		puts "The Gem #{gem} wasn't found, installing..."
     		unless system("gem install #{gem}")
       			abort "Install of #{gem} failed. Exiting..."
 		end
