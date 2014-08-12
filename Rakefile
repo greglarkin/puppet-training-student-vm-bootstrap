@@ -8,7 +8,7 @@ end
 
 task :default => 'deps'
 necessary_programs = %w(VirtualBox vagrant)
-necessary_plugins = %w(vagrant-auto_network vagrant-pe_build)
+necessary_plugins = %w(vagrant-hosts vagrant-auto_network vagrant-pe_build)
 necessary_gems = %w(bundle r10k)
 dir_structure = %w(puppet puppet/modules puppet/manifests) 
 file_structure = %w(puppet/Puppetfile puppet/manifests/site.pp)
@@ -110,7 +110,7 @@ task :pull do
     abort 'Failed to build out Puppet module directory. Exiting...'
   end
   puts "Pulling down pltraining/fundamentals"
-  unless system("puppet module install pltraining/fundamentals --modulepath \"#{moduledir}\"")
+  unless system("/opt/puppet/bin/puppet module install pltraining/fundamentals --modulepath \"#{moduledir}\"")
 	  abort "Failed to pull down pltraining/fundamentals"
   end
 end
