@@ -9,7 +9,7 @@ Bootstraps VMs for class in the case that students can not boot their own VMs
 
 3. Run the setup:
 
-	rake setup
+	```rake setup```
 
 4. Deploy the environment:
 
@@ -17,3 +17,11 @@ Bootstraps VMs for class in the case that students can not boot their own VMs
 	with a master
 	
 	```NUM_AGENTS=<num> rake deploy```
+
+	A list of ssh commands will be emitted at the end of the deployment,
+	one for each student VM. Distribute one command to each student that
+	needs one.
+
+5. Destroy the environment:
+
+	```NUM_AGENTS=<num> rake destroy```
