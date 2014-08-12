@@ -40,6 +40,7 @@ task :setup do
       			abort "Install of #{plugin} failed. Exiting..."
 		end
     	end
+	puts "OK"
   end
 
   necessary_gems.each do |gem|
@@ -50,6 +51,7 @@ task :setup do
       			abort "Install of #{gem} failed. Exiting..."
 		end
     	end
+	puts "OK"
 	printf "Checking for additional gems via 'bundle check'..."
   	unless %x{bundle check}
     		abort ''
@@ -90,7 +92,7 @@ puts "Checking CWD for directory structure..."
   end
 end
 
-desc 'Deploying modules form Puppetfile and booting master and agent VMs' 
+desc 'Deploying modules from Puppetfile and booting master and agent VMs' 
 task :pull do
   puts "Building out Puppet module directory..."
   confdir = Dir.pwd
