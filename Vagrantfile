@@ -7,13 +7,22 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.pe_build.download_root = 'https://s3.amazonaws.com/pe-builds/released/:version'
   config.pe_build.version = "3.3.0"
 
+## Default number of nodes - can be overridden with env var on command line:
+#
+#  NUM_AGENTS=4 vagrant up [...]
+#
+#
+DEFAULT_NUM_AGENTS=2
+
 ## Master
   config.vm.define :master do |master|
+    mac_addr = "080027" + (1..3).map{"%0.2X"%rand(256)}.join("").downcase
+
     master.vm.provider 'virtualbox' do |p|
     	p.memory = '4096'
 	p.cpus = '4'
     end
-    master.vm.network :private_network, ip: "10.10.100.100", :bridge => 'eth0', :mac => "080027XXXXXX"
+    master.vm.network :private_network, ip: "10.10.100.100", :bridge => 'eth0', :mac => mac_addr
     master.vm.hostname = 'master.puppetlabs.vm'
     master.vm.provision :hosts
     master.vm.provision :pe_bootstrap do |pe|
@@ -21,94 +30,33 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     end
     master.vm.synced_folder "puppet/modules", "/tmp/modules"
     master.vm.synced_folder "puppet/manifests", "/tmp/manifests"
-    master.vm.provision "shell", inline: "service iptables stop"
-    master.vm.provision "shell", inline: "rm -rf /etc/puppetlabs/puppet/modules/ && ln -s /tmp/modules/ /etc/puppetlabs/puppet/"
-    master.vm.provision "shell", inline: "rm -rf /etc/puppetlabs/puppet/manifests/ && ln -s /tmp/manifests/ /etc/puppetlabs/puppet/"
+    master.vm.provision "shell", path: "bootscripts/master.sh"
   end
 
 ## Agents
-  config.vm.define :student1 do |agent|
-    agent.vm.provider 'virtualbox' do |p|
-       p.memory = '1024'
-       p.cpus = '1'
-    end
-    agent.vm.network :private_network, ip: "10.10.100.111", :bridge => 'eth0', :mac => "080027XXXXXX"
-    agent.vm.hostname = 'student1.puppetlabs.vm'
-    agent.vm.provision :hosts
-    agent.vm.provision :pe_bootstrap do |pe|
-      pe.role   =  :agent
-      pe.master = 'master.puppetlabs.vm'
-    end
+  if defined?(ENV['NUM_AGENTS'])
+    NUM_AGENTS = ENV['NUM_AGENTS']
+  else
+    NUM_AGENTS = DEFAULT_NUM_AGENTS
   end
 
-  config.vm.define :student2 do |agent|
-    agent.vm.provider 'virtualbox' do |p|
-       p.memory = '1024'
-       p.cpus = '1'
-    end
-    agent.vm.network :private_network, ip: "10.10.100.112", :bridge => 'eth0', :mac => "080027XXXXXX"
-    agent.vm.hostname = 'student2.puppetlabs.vm'
-    agent.vm.provision :hosts
-    agent.vm.provision :pe_bootstrap do |pe|
-      pe.role   =  :agent
-      pe.master = 'master.puppetlabs.vm'
-    end
-  end
+  1.upto(NUM_AGENTS.to_i) do |i|
+    node_name = "student#{i}"
+    node_ip = "10.10.100.11#{i}"
+    mac_addr = "080027" + (1..3).map{"%0.2X"%rand(256)}.join("").downcase
 
- config.vm.define :student3 do |agent|
-    agent.vm.provider 'virtualbox' do |p|
-       p.memory = '1024'
-       p.cpus = '1'
-    end
-    agent.vm.network :private_network, ip: "10.10.100.113", :bridge => 'eth0', :mac => "080027XXXXXX"
-    agent.vm.hostname = 'student3.puppetlabs.vm'
-    agent.vm.provision :hosts
-    agent.vm.provision :pe_bootstrap do |pe|
-      pe.role   =  :agent
-      pe.master = 'master.puppetlabs.vm'
-    end
-  end
-
- config.vm.define :student5 do |agent|
-    agent.vm.provider 'virtualbox' do |p|
-       p.memory = '1024'
-       p.cpus = '1'
-    end
-    agent.vm.network :private_network, ip: "10.10.100.114", :bridge => 'eth0', :mac => "080027XXXXXX"
-    agent.vm.hostname = 'student5.puppetlabs.vm'
-    agent.vm.provision :hosts
-    agent.vm.provision :pe_bootstrap do |pe|
-      pe.role   =  :agent
-      pe.master = 'master.puppetlabs.vm'
-    end
-  end
-
-config.vm.define :student4 do |agent|
-    agent.vm.provider 'virtualbox' do |p|
-       p.memory = '1024'
-       p.cpus = '1'
-    end
-    agent.vm.network :private_network, ip: "10.10.100.115", :bridge => 'eth0', :mac => "080027XXXXXX"
-    agent.vm.hostname = 'student4.puppetlabs.vm'
-    agent.vm.provision :hosts
-    agent.vm.provision :pe_bootstrap do |pe|
-      pe.role   =  :agent
-      pe.master = 'master.puppetlabs.vm'
-    end
-  end
-
-
- config.vm.define :student5 do |agent|
-    agent.vm.provider 'virtualbox' do |p|
-       p.memory = '1024'
-       p.cpus = '1'
-    end
-    agent.vm.network :private_network, ip: "10.10.100.116", :bridge => 'eth0', :mac => "080027XXXXXX"
-    agent.vm.hostname = 'student5.puppetlabs.vm'
-    agent.vm.provision :hosts
-    agent.vm.provision :pe_bootstrap do |pe|
-      pe.role   =  :agent
-      pe.master = 'master.puppetlabs.vm'
+    config.vm.define node_name do |agent|
+      agent.vm.provider 'virtualbox' do |p|
+         p.memory = '1024'
+         p.cpus = '1'
+      end
+      agent.vm.network :private_network, :ip => node_ip, :bridge => 'eth0', :mac => mac_addr
+      agent.vm.hostname = "#{node_name}.puppetlabs.vm"
+      agent.vm.provision :hosts
+      agent.vm.provision :pe_bootstrap do |pe|
+        pe.role   =  :agent
+        pe.master = 'master.puppetlabs.vm'
+      end
     end
   end
 

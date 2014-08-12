@@ -7,7 +7,7 @@ rescue LoadError => e
 end
 
 task :default => 'deps'
-necessary_programs = %w(VirtualBox vagrant)
+necessary_programs = %w(VirtualBox vagrant puppet)
 necessary_plugins = %w(vagrant-hosts vagrant-auto_network vagrant-pe_build)
 necessary_gems = %w(bundle r10k)
 dir_structure = %w(puppet puppet/modules puppet/manifests) 
@@ -30,7 +30,6 @@ task :setup do
     end
     puts "OK"
   end
-
   
   necessary_plugins.each do |plugin|
 	printf "Checking for vagrant plugin %s...", plugin
@@ -110,7 +109,7 @@ task :pull do
     abort 'Failed to build out Puppet module directory. Exiting...'
   end
   puts "Pulling down pltraining/fundamentals"
-  unless system("/opt/puppet/bin/puppet module install pltraining/fundamentals --modulepath \"#{moduledir}\"")
+  unless system("puppet module install pltraining/fundamentals --modulepath \"#{moduledir}\"")
 	  abort "Failed to pull down pltraining/fundamentals"
   end
 end
@@ -120,7 +119,12 @@ task :deploy do
   Rake::Task[:pull].execute
 
   puts "Bringing up vagrant machines"
-  unless system("vagrant up") 
+  if defined?(ENV['NUM_AGENTS'])
+    env_str = "NUM_AGENTS="+ENV['NUM_AGENTS']+" "
+  else
+    env_str = ""
+  end
+  unless system("#{env_str}vagrant up --provider virtualbox") 
 	  abort 'Vagrant up failed. Exiting...'
   end
   puts "Training VM's Up Successfully\n"
