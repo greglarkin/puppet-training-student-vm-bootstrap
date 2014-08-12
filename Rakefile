@@ -135,7 +135,7 @@ task :deploy do
   puts "Password: puppet"
   puts "-----"
   puts "Access agents at:\n"
-  1.upto(NUM_AGENTS.to_i) do |i|
+  1.upto(ENV['NUM_AGENTS'].to_i) do |i|
     node_ip = "10.100.100.11#{i}"
     puts "  student#{i}: ssh root@#{node_ip} (Password: puppet)"
   end
