@@ -16,13 +16,11 @@ DEFAULT_NUM_AGENTS=2
 
 ## Master
   config.vm.define :master do |master|
-    mac_addr = "080027" + (1..3).map{"%0.2X"%rand(256)}.join("").downcase
-
     master.vm.provider 'virtualbox' do |p|
     	p.memory = '4096'
 	p.cpus = '4'
     end
-    master.vm.network :private_network, ip: "10.10.100.100", :bridge => 'eth0', :mac => mac_addr
+    master.vm.network :private_network, ip: "10.10.100.100", :bridge => 'eth0'
     master.vm.hostname = 'master.puppetlabs.vm'
     master.vm.provision :hosts
     master.vm.provision :pe_bootstrap do |pe|
@@ -43,14 +41,13 @@ DEFAULT_NUM_AGENTS=2
   1.upto(NUM_AGENTS.to_i) do |i|
     node_name = "student#{i}"
     node_ip = "10.10.100.11#{i}"
-    mac_addr = "080027" + (1..3).map{"%0.2X"%rand(256)}.join("").downcase
 
     config.vm.define node_name do |agent|
       agent.vm.provider 'virtualbox' do |p|
          p.memory = '1024'
          p.cpus = '1'
       end
-      agent.vm.network :private_network, :ip => node_ip, :bridge => 'eth0', :mac => mac_addr
+      agent.vm.network :private_network, :ip => node_ip, :bridge => 'eth0'
       agent.vm.hostname = "#{node_name}.puppetlabs.vm"
       agent.vm.provision :hosts
       agent.vm.provision :pe_bootstrap do |pe|
