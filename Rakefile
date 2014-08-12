@@ -13,6 +13,13 @@ necessary_gems = %w(bundle r10k)
 dir_structure = %w(puppet puppet/modules puppet/manifests) 
 file_structure = %w(puppet/Puppetfile puppet/manifests/site.pp)
 
+# Build the environment string to pass to the vagrant commands
+if defined?(ENV['NUM_AGENTS'])
+  env_str = "NUM_AGENTS="+ENV['NUM_AGENTS']+" "
+else
+  env_str = ""
+end
+
 desc "Setup the local environment" 
 task :setup do
   puts 'Checking environment dependencies...'
@@ -119,26 +126,23 @@ task :deploy do
   Rake::Task[:pull].execute
 
   puts "Bringing up vagrant machines"
-  if defined?(ENV['NUM_AGENTS'])
-    env_str = "NUM_AGENTS="+ENV['NUM_AGENTS']+" "
-  else
-    env_str = ""
-  end
   unless system("#{env_str}vagrant up --provider virtualbox") 
 	  abort 'Vagrant up failed. Exiting...'
   end
-  puts "Training VM's Up Successfully\n"
+  puts "Training VMs Up Successfully\n"
   puts "-----"
   puts "Access master at 'vagrant ssh master' or 'ssh root@10.10.100.100'\n"
-  puts "Password = puppet"
+  puts "Password: puppet"
   puts "-----"
-  puts "Student VM's:\n"
-  puts "agent[1-5].puppetlabs.vm"
-  puts "root/puppet"
+  puts "Access agents at:\n"
+  1.upto(NUM_AGENTS.to_i) do |i|
+    node_ip = "10.100.100.11#{i}"
+    puts "  student#{i}: ssh root@#{node_ip} (Password: puppet)"
+  end
   puts "-----"
   puts "Puppet modules brought in via puppet/Puppetfile are available on the Vagrant master VM at /etc/puppetlabs/puppet/modules"
   puts "-----"
-  puts "Contact git owner for PR's & bug fixes"
+  puts "Contact git owner for PRs & bug fixes"
   puts "-----"
   Rake::Task['docs']
 end
@@ -149,7 +153,7 @@ task :destroy do
 	STDOUT.flush
 	ans = STDIN.gets.chomp
 	if ans =~ /^y/
-		system("vagrant destroy -f")
+		system("#{env_str}vagrant destroy -f")
 	else
 		abort 'Aborting vagrant destroy, exiting...'
 	end		
