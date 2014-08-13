@@ -17,10 +17,13 @@ DEFAULT_NUM_AGENTS=2
 ## Master
   config.vm.define :master do |master|
     master.vm.provider 'virtualbox' do |p|
-    	p.memory = '4096'
-	p.cpus = '4'
+      p.memory = '4096'
+      p.cpus = '4'
+      p.name = 'master'
+      p.customize ["modifyvm", :id, "--ioapic", "on"]
     end
     master.vm.network :private_network, ip: "10.10.100.100", :bridge => 'eth0'
+    master.vm.network :public_network, :bridge => "en0: Wi-Fi (AirPort)"
     master.vm.hostname = 'master.puppetlabs.vm'
     master.vm.provision :hosts
     master.vm.provision :pe_bootstrap do |pe|
@@ -46,6 +49,7 @@ DEFAULT_NUM_AGENTS=2
       agent.vm.provider 'virtualbox' do |p|
          p.memory = '1024'
          p.cpus = '1'
+         p.name = node_name
       end
       agent.vm.network :private_network, :ip => node_ip, :bridge => 'eth0'
       agent.vm.hostname = "#{node_name}.puppetlabs.vm"
