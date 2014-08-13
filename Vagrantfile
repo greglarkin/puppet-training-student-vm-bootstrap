@@ -64,6 +64,7 @@ DEFAULT_AGENT_MEM=512
          p.name = node_name
       end
       agent.vm.network :private_network, :ip => node_ip, :bridge => 'eth0'
+      agent.vm.network :public_network, :bridge => "en0: Wi-Fi (AirPort)"
       agent.vm.hostname = "#{node_name}.puppetlabs.vm"
       agent.vm.provision :hosts
       agent.vm.provision :pe_bootstrap do |pe|
