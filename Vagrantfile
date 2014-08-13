@@ -14,6 +14,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 #
 DEFAULT_NUM_AGENTS=2
 
+## Default agent memory size - can be overridden with env var on command line:
+#
+#  AGENT_MEM=768 vagrant up [...]
+#
+#
+DEFAULT_AGENT_MEM=512
+
 ## Master
   config.vm.define :master do |master|
     master.vm.provider 'virtualbox' do |p|
@@ -35,10 +42,15 @@ DEFAULT_NUM_AGENTS=2
   end
 
 ## Agents
-  if defined?(ENV['NUM_AGENTS'])
+  if !ENV['NUM_AGENTS'].nil?
     NUM_AGENTS = ENV['NUM_AGENTS']
   else
     NUM_AGENTS = DEFAULT_NUM_AGENTS
+  end
+  if !ENV['AGENT_MEM'].nil?
+    AGENT_MEM = ENV['AGENT_MEM']
+  else
+    AGENT_MEM = DEFAULT_AGENT_MEM
   end
 
   1.upto(NUM_AGENTS.to_i) do |i|
@@ -47,7 +59,7 @@ DEFAULT_NUM_AGENTS=2
 
     config.vm.define node_name do |agent|
       agent.vm.provider 'virtualbox' do |p|
-         p.memory = '1024'
+         p.memory = AGENT_MEM
          p.cpus = '1'
          p.name = node_name
       end
