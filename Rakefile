@@ -1,4 +1,5 @@
 begin
+  require 'open3'
   require 'os'
   require 'ptools'
 rescue LoadError => e
@@ -14,10 +15,12 @@ dir_structure = %w(puppet puppet/modules puppet/manifests)
 file_structure = %w(puppet/Puppetfile puppet/manifests/site.pp)
 
 # Build the environment string to pass to the vagrant commands
-if defined?(ENV['NUM_AGENTS'])
-  env_str = "NUM_AGENTS="+ENV['NUM_AGENTS']+" "
-else
-  env_str = ""
+env_str = ""
+if !ENV['NUM_AGENTS'].nil?
+  env_str += "NUM_AGENTS="+ENV['NUM_AGENTS']+" "
+end
+if !ENV['AGENT_MEM'].nil?
+  env_str += "AGENT_MEM="+ENV['AGENT_MEM']+" "
 end
 
 desc "Setup the local environment" 
@@ -106,10 +109,12 @@ task :pull do
   bakmodule = "#{confdir}/puppet/bak_modules"
   puppetfile = "#{confdir}/puppet/Puppetfile"
   existing_mods = Dir.foreach(moduledir) do |bak|
-	puts "Backing up #{bak} to #{confdir}/puppet/#{bak}"
-	unless system("rsync -av --exclude='.*' \"#{moduledir}/#{bak}\" \"#{bakmodule}\"") 
-		abort "Failed to copy #{bak}, aborting..."
-	end
+    unless bak =~ /^\.\.?$/
+      puts "Backing up #{bak} to #{confdir}/puppet/#{bak}"
+      unless system("rsync -av --exclude='.*' \"#{moduledir}/#{bak}\" \"#{bakmodule}\"") 
+        abort "Failed to copy #{bak}, aborting..."
+      end
+    end
   end
   puts "Re-populating #{moduledir} with modules from Puppetfile."
   unless system("PUPPETFILE=\"#{puppetfile}\" PUPPETFILE_DIR=\"#{moduledir}\" /usr/bin/r10k puppetfile install -v")
@@ -117,7 +122,7 @@ task :pull do
   end
   puts "Pulling down pltraining/fundamentals"
   unless system("puppet module install pltraining/fundamentals --modulepath \"#{moduledir}\"")
-	  abort "Failed to pull down pltraining/fundamentals"
+    abort "Failed to pull down pltraining/fundamentals"
   end
 end
 
@@ -127,19 +132,33 @@ task :deploy do
 
   puts "Bringing up vagrant machines"
   unless system("#{env_str}vagrant up --provider virtualbox") 
-	  abort 'Vagrant up failed. Exiting...'
+    abort 'Vagrant up failed. Exiting...'
   end
   puts "Training VMs Up Successfully\n"
   puts "-----"
   puts "Access master at 'vagrant ssh master' or 'ssh root@10.10.100.100'\n"
   puts "Password: puppet"
   puts "-----"
-  puts "Access agents at:\n"
-  1.upto(ENV['NUM_AGENTS'].to_i) do |i|
-    node_ip = "10.100.100.11#{i}"
-    puts "  student#{i}: ssh root@#{node_ip} (Password: puppet)"
+  if !ENV['NUM_AGENTS'].nil? && ENV['NUM_AGENTS'].to_i > 0
+    puts "Access agents at:\n"
+    1.upto(ENV['NUM_AGENTS'].to_i) do |i|
+      stdout, status = Open3.capture2(ENV, 'vagrant', 'ssh', "student#{i}", '--', '/sbin/ifconfig')
+      if !status
+        puts "  student#{i}: Could not determine IP address"
+      else
+        # Ugh - search for "eth2" since the 3rd interface is bridged to
+        # the host.  Then extract the IP address attached to it and print
+        # the command that the student should use to connect.
+        node_ip = stdout[stdout.index("eth2"),stdout.length].match(/inet addr:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/)[1]
+        if node_ip
+          puts "  student#{i}: ssh root@#{node_ip} (Password: puppet)"
+        else
+          puts "  student#{i}: Could not determine IP address"
+        end
+      end
+    end
+    puts "-----"
   end
-  puts "-----"
   puts "Puppet modules brought in via puppet/Puppetfile are available on the Vagrant master VM at /etc/puppetlabs/puppet/modules"
   puts "-----"
   puts "Contact git owner for PRs & bug fixes"
